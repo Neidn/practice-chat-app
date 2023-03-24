@@ -1,6 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../widgets/chat/messages.dart';
+import '../widgets/chat/new_message.dart';
 
 class ChatScreen extends StatelessWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -8,31 +11,41 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('chats/eK62Dk6KAG6ugbRUzAvi/messages')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          final documents = snapshot.data?.docs ?? [];
-          return ListView.builder(
-            itemCount: documents.length,
-            itemBuilder: (context, index) => Container(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(documents[index]['text']),
+      appBar: AppBar(
+        title: const Text('FlutterChat'),
+        actions: [
+          DropdownButton(
+            icon: Icon(
+              Icons.more_vert,
+              color: Theme.of(context).primaryIconTheme.color,
             ),
-          );
-        },
+            onChanged: (value) {
+              if (value == 'logout') {
+                FirebaseAuth.instance.signOut();
+              }
+            },
+            items: [
+              DropdownMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: const [
+                    Icon(Icons.exit_to_app),
+                    SizedBox(width: 8),
+                    Text('Logout'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => FirebaseFirestore.instance
-            .collection('chats/eK62Dk6KAG6ugbRUzAvi/messages')
-            .add({'text': 'This was added by clicking the button'}),
-        child: const Icon(Icons.add),
+      body: Column(
+        children: const [
+          Expanded(
+            child: Messages(),
+          ),
+          NewMessage(),
+        ],
       ),
     );
   }

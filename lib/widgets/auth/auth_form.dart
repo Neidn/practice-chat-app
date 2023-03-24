@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
-  const AuthForm({Key? key}) : super(key: key);
+  final void Function(
+    String email,
+    String password,
+    String userName,
+    bool isLogin,
+    BuildContext ctx,
+  ) submitFn;
+  final bool isLoading;
+
+  const AuthForm(this.submitFn, this.isLoading, {Key? key}) : super(key: key);
 
   @override
   State<AuthForm> createState() => _AuthFormState();
@@ -9,6 +18,7 @@ class AuthForm extends StatefulWidget {
 
 class _AuthFormState extends State<AuthForm> {
   final _formKey = GlobalKey<FormState>();
+  bool _isLogin = true;
   String _userEmail = '';
   String _userName = '';
   String _userPassword = '';
@@ -22,9 +32,13 @@ class _AuthFormState extends State<AuthForm> {
     FocusScope.of(context).unfocus();
     if (isValid) {
       _formKey.currentState!.save();
-      print(_userEmail);
-      print(_userName);
-      print(_userPassword);
+      widget.submitFn(
+        _userEmail.trim(),
+        _userPassword.trim(),
+        _userName.trim(),
+        _isLogin,
+        context,
+      );
     }
   }
 
@@ -42,6 +56,7 @@ class _AuthFormState extends State<AuthForm> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
+                    key: const ValueKey('email'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter some text';
@@ -57,19 +72,22 @@ class _AuthFormState extends State<AuthForm> {
                     ),
                     onSaved: (value) => _userEmail = value ?? '',
                   ),
-                  TextFormField(
-                    validator: (value) {
-                      if (value == null || value.length < 4) {
-                        return 'Please enter at least 4 characters.';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
+                  if (!_isLogin)
+                    TextFormField(
+                      key: const ValueKey('username'),
+                      validator: (value) {
+                        if (value == null || value.length < 4) {
+                          return 'Please enter at least 4 characters.';
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                      ),
+                      onSaved: (value) => _userName = value ?? '',
                     ),
-                    onSaved: (value) => _userName = value ?? '',
-                  ),
                   TextFormField(
+                    key: const ValueKey('password'),
                     validator: (value) {
                       if (value == null || value.length < 7) {
                         return 'Password must be at least 7 characters long.';
@@ -83,15 +101,20 @@ class _AuthFormState extends State<AuthForm> {
                     onSaved: (value) => _userPassword = value ?? '',
                   ),
                   const SizedBox(height: 12),
-                  ElevatedButton(
-                    // Form submit
-                    onPressed: () => _trySubmit(),
-                    child: const Text('Login'),
-                  ),
-                  TextButton(
-                    onPressed: () => {},
-                    child: const Text('Create new account'),
-                  ),
+                  if (widget.isLoading) const CircularProgressIndicator(),
+                  if (!widget.isLoading)
+                    ElevatedButton(
+                      // Form submit
+                      onPressed: () => _trySubmit(),
+                      child: Text(_isLogin ? 'Login' : 'Signup'),
+                    ),
+                  if (!widget.isLoading)
+                    TextButton(
+                      onPressed: () => setState(() => _isLogin = !_isLogin),
+                      child: Text(_isLogin
+                          ? 'Create new account'
+                          : 'I already have an account'),
+                    ),
                 ],
               ),
             ),
