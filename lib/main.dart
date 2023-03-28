@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.light(
           primary: Colors.pink,
           secondary: Colors.deepPurple,
+          onSecondary: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
