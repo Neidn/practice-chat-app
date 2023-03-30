@@ -15,27 +15,20 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
+    super.initState();
     final firebaseMessaging = FirebaseMessaging.instance;
     firebaseMessaging.requestPermission();
     firebaseMessaging.subscribeToTopic('chat');
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    FirebaseMessaging.onMessage.listen((message) {
-      print('onMessage');
-      // message title
-      print(message.notification!.title);
-      // message body
-      print(message.notification!.body);
-      return;
-    });
     return Scaffold(
       appBar: AppBar(
         title: const Text('FlutterChat'),
         actions: [
           DropdownButton(
+            underline: Container(),
             icon: Icon(
               Icons.more_vert,
               color: Theme.of(context).primaryIconTheme.color,
